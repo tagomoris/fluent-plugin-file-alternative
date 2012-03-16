@@ -6,6 +6,8 @@ module FluentExt::PlainTextFormatterMixin
   attr_accessor :add_newline, :field_separator
   attr_accessor :remove_prefix, :default_tag
   
+  attr_accessor :f_separator
+
   def configure(conf)
     super
 
@@ -18,11 +20,11 @@ module FluentExt::PlainTextFormatterMixin
     @output_data_type = conf['output_data_type']
     @output_data_type = 'json' if @output_data_type.nil?
 
-    @field_separator = case @field_separator
-                       when 'SPACE' then ' '
-                       when 'COMMA' then ','
-                       else "\t"
-                       end
+    @f_separator = case conf['field_separator']
+                   when 'SPACE' then ' '
+                   when 'COMMA' then ','
+                   else "\t"
+                   end
     @add_newline = Fluent::Config.bool_value(conf['add_newline'])
     if @add_newline.nil?
       @add_newline = true
@@ -63,7 +65,7 @@ module FluentExt::PlainTextFormatterMixin
       if @custom_attributes.size > 1
         self.instance_eval {
           def stringify_record(record)
-            @custom_attributes.map{|attr| (record[attr] || 'NULL').to_s}.join(@field_separator)
+            @custom_attributes.map{|attr| (record[attr] || 'NULL').to_s}.join(@f_separator)
           end
         }
       elsif @custom_attributes.size == 1
@@ -87,13 +89,13 @@ module FluentExt::PlainTextFormatterMixin
                 tag == @remove_prefix
               tag = tag[@removed_length..-1] || @default_tag
             end
-            @timef.format(time) + @field_separator + tag + @field_separator + stringify_record(record) + "\n"
+            @timef.format(time) + @f_separator + tag + @f_separator + stringify_record(record) + "\n"
           end
         }
       elsif @add_newline
         self.instance_eval {
           def format(tag,time,record)
-            @timef.format(time) + @field_separator + tag + @field_separator + stringify_record(record) + "\n"
+            @timef.format(time) + @f_separator + tag + @f_separator + stringify_record(record) + "\n"
           end
         }
       elsif @remove_prefix
@@ -103,13 +105,13 @@ module FluentExt::PlainTextFormatterMixin
                 tag == @remove_prefix
               tag = tag[@removed_length..-1] || @default_tag
             end
-            @timef.format(time) + @field_separator + tag + @field_separator + stringify_record(record)
+            @timef.format(time) + @f_separator + tag + @f_separator + stringify_record(record)
           end
         }
       else
         self.instance_eval {
           def format(tag,time,record)
-            @timef.format(time) + @field_separator + tag + @field_separator + stringify_record(record)
+            @timef.format(time) + @f_separator + tag + @f_separator + stringify_record(record)
           end
         }
       end
@@ -117,13 +119,13 @@ module FluentExt::PlainTextFormatterMixin
       if @add_newline
         self.instance_eval {
           def format(tag,time,record);
-            @timef.format(time) + @field_separator + stringify_record(record) + "\n"
+            @timef.format(time) + @f_separator + stringify_record(record) + "\n"
           end
         }
       else
         self.instance_eval {
           def format(tag,time,record);
-            @timef.format(time) + @field_separator + stringify_record(record)
+            @timef.format(time) + @f_separator + stringify_record(record)
           end
         }
       end
@@ -135,13 +137,13 @@ module FluentExt::PlainTextFormatterMixin
                 tag == @remove_prefix
               tag = tag[@removed_length..-1] || @default_tag
             end
-            tag + @field_separator + stringify_record(record) + "\n"
+            tag + @f_separator + stringify_record(record) + "\n"
           end
         }
       elsif @add_newline
         self.instance_eval {
           def format(tag,time,record)
-            tag + @field_separator + stringify_record(record) + "\n"
+            tag + @f_separator + stringify_record(record) + "\n"
           end
         }
       elsif @remove_prefix
@@ -151,13 +153,13 @@ module FluentExt::PlainTextFormatterMixin
                 tag == @remove_prefix
               tag = tag[@removed_length..-1] || @default_tag
             end
-            tag + @field_separator + stringify_record(record)
+            tag + @f_separator + stringify_record(record)
           end
         }
       else
         self.instance_eval {
           def format(tag,time,record)
-            tag + @field_separator + stringify_record(record)
+            tag + @f_separator + stringify_record(record)
           end
         }
       end
@@ -187,12 +189,12 @@ module FluentExt::PlainTextFormatterMixin
       tag = tag[@removed_length..-1] || @default_tag
     end
     time_str = if @output_include_time
-                 @timef.format(time) + @field_separator
+                 @timef.format(time) + @f_separator
                else
                  ''
                end
     tag_str = if @output_include_tag
-                tag + @field_separator
+                tag + @f_separator
               else
                 ''
               end
@@ -204,12 +206,25 @@ end
 class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   Fluent::Plugin.register_output('file_alternative', self)
 
-  config_set_default :buffer_type, 'memory'
+  SUPPORTED_COMPRESS = {
+    :gz => :gz,
+    :gzip => :gz,
+  }
+
   config_set_default :time_slice_format, '%Y%m%d' # %Y%m%d%H
 
   config_param :path, :string  # /path/pattern/to/hdfs/file can use %Y %m %d %H %M %S
 
+  config_param :compress, :default => nil do |val|
+    c = SUPPORTED_COMPRESS[val.to_sym]
+    unless c
+      raise ConfigError, "Unsupported compression algorithm '#{compress}'"
+    end
+    c
+  end
+
   include FluentExt::PlainTextFormatterMixin
+
   config_set_default :output_include_time, true
   config_set_default :output_include_tag, true
   config_set_default :output_data_type, 'json'
@@ -220,7 +235,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   def initialize
     super
     require 'time'
-    # zlib
+    require 'zlib'
   end
 
   def configure(conf)
@@ -233,17 +248,23 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
         conf['time_slice_format'] = '%Y%m%d%H'
       end
     end
+    if pos = (conf['path'] || '').index('*')
+      @path_prefix = conf['path'][0,pos]
+      @path_suffix = conf['path'][pos+1..-1]
+      conf['buffer_path'] ||= "#{conf['path']}"
+    elsif (conf['path'] || '%Y') !~ /%Y|%m|%d|%H|%M|%S/
+      @path_prefix = conf['path'] + "."
+      @path_suffix = ".log"
+      conf['buffer_path'] ||= "#{conf['path']}.*"
+    elsif (conf['path'] || '') =~ /%Y|%m|%d|%H|%M|%S/
+      conf['buffer_path'] ||= conf['path'].gsub('%Y','yyyy').gsub('%m','mm').gsub('%d','dd').gsub('%H','HH').gsub('%M','MM').gsub('%S','SS')
+    end
 
     super
 
     unless @path.index('/') == 0
       raise Fluent::ConfigError, "Path on filesystem MUST starts with '/', but '#{@path}'"
     end
-    @f_separator = case @field_separator
-                   when 'SPACE' then ' '
-                   when 'COMMA' then ','
-                   else "\t"
-                   end
   end
 
   def start
@@ -266,16 +287,57 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   end
 
   def path_format(chunk_key)
-    Time.strptime(chunk_key, @time_slice_format).strftime(@path)
+    suffix = case @compress
+             when :gz
+               '.gz'
+             else
+               ''
+             end
+    if @path_prefix and @path_suffix
+      if @compress
+        i = 0
+        begin
+          path = "#{@path_prefix}#{chunk_key}_#{i}#{@path_suffix}#{suffix}"
+          i += 1
+        end while File.exist?(path)
+        path
+      else
+        "#{@path_prefix}#{chunk_key}_#{@path_suffix}#{suffix}"
+      end
+    else
+      if @compress
+        path_base = Time.strptime(chunk_key, @time_slice_format).strftime(@path)
+        path = path_base + suffix
+        if File.exist?(path)
+          i = 0
+          begin
+            path = "#{path_base}.#{i}#{suffix}"
+            i += 1
+          end while File.exist?(path)
+        end
+        path
+      else
+        Time.strptime(chunk_key, @time_slice_format).strftime(@path)
+      end
+    end
   end
 
   def write(chunk)
     path = path_format(chunk.key)
+
     begin
       FileUtils.mkdir_p File.dirname(path)
-      File.open(path, "a") {|f|
-        chunk.write_to(f)
-      }
+
+      case @compress
+      when :gz
+        Zlib::GzipWriter.open(path) {|f|
+          chunk.write_to(f)
+        }
+      else
+        File.open(path, "a") {|f|
+          chunk.write_to(f)
+        }
+      end
     rescue
       $log.error "failed to write data: path #{path}"
       raise

@@ -1,29 +1,71 @@
-# Fluent::Plugin::File::Alternative
+# fluent-plugin-file-alternative
 
-TODO: Write a gem description
+File output plugin alternative implementation, **is 100% compatible with fluentd built-in 'out_file'**, and added many options to format output as you want.
 
-## Installation
+FileAlternativeOutput slices data by time (for specified units), and store these data as plain text on hdfs. You can specify to:
 
-Add this line to your application's Gemfile:
+* format whole data as serialized JSON, single attribute or separated multi attributes
+* include time as line header, or not
+* include tag as line header, or not
+* change field separator (default: TAB)
+* add new line as termination, or not
 
-    gem 'fluent-plugin-file-alternative'
+And you can specify output file path as:
 
-And then execute:
+* Standard out_file way
+  * configure 'path /path/to/dir/access'
+  * and 'time\_slice\_format %Y%m%d'
+  * got '/path/to/dir/access.20120316.log'
+* Alternative style
+  * configure 'path /path/to/dir/access.%Y%m%d.log' only
+  * got '/path/to/dir/access.20120316.log'
 
-    $ bundle
+And, gzip compression is also supported.
 
-Or install it yourself as:
+## Configuration
 
-    $ gem install fluent-plugin-file-alternative
+### FileAlternativeOutput
 
-## Usage
+Standard out_file way (hourly log, compression, time-tag-json):
 
-TODO: Write usage instructions here
+    <match out.**>
+      type file\_alternative
+      path /var/log/service/access.*.log
+      time\_slice\_output %Y%m%d_%H
+      compress gzip
+    </match>
 
-## Contributing
+By this configuration, in gzip compressed file '/var/log/service/access.20120316_23.log.gz', you get:
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+    2012-03-16T23:59:40 [TAB] out.service.xxx [TAB] {"field1":"value1","field2":"value2"}
+    2012-03-16T23:59:40 [TAB] out.service.xxx [TAB] {"field1":"value1","field2":"value2"}
+    2012-03-16T23:59:40 [TAB] out.service.xxx [TAB] {"field1":"value1","field2":"value2"}
+    2012-03-16T23:59:40 [TAB] out.service.xxx [TAB] {"field1":"value1","field2":"value2"}
+    
+If you don't want fluentd-time and tag in written file, and messages with single attribute (as raw full apache log with newline):
+
+    <match out.**>
+      type file\_alternative
+      path /var/log/service/access.%Y%m%d_%H.log
+      compress gzip
+      output_include_time false
+      output_include_tag false
+      output_data_type attr:message
+      add_newline false
+    </match>
+
+Then, you will get:
+
+    192.168.0.1 - - [16/Mar/2012:23:59:40 +0900] "GET /content/x HTTP/1.1" 200 -
+    192.168.0.1 - - [16/Mar/2012:23:59:40 +0900] "GET /content/x HTTP/1.1" 200 -
+    192.168.0.1 - - [16/Mar/2012:23:59:40 +0900] "GET /content/x HTTP/1.1" 200 -
+
+## TODO
+
+* consider what to do next
+* patches welcome!
+
+## Copyright
+
+Copyright:: Copyright (c) 2012- TAGOMORI Satoshi (tagomoris)
+License::   Apache License, Version 2.0
