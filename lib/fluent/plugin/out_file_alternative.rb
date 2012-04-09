@@ -253,8 +253,13 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
       @path_suffix = conf['path'][pos+1..-1]
       conf['buffer_path'] ||= "#{conf['path']}"
     elsif (conf['path'] || '%Y') !~ /%Y|%m|%d|%H|%M|%S/
-      @path_prefix = conf['path'] + "."
-      @path_suffix = ".log"
+      if conf['path'] =~ /\.log\Z/
+        @path_prefix = conf['path'][0..-4]
+        @path_suffix = ".log"
+      else
+        @path_prefix = conf['path'] + "."
+        @path_suffix = ".log"
+      end
       conf['buffer_path'] ||= "#{conf['path']}.*"
     elsif (conf['path'] || '') =~ /%Y|%m|%d|%H|%M|%S/
       conf['buffer_path'] ||= conf['path'].gsub('%Y','yyyy').gsub('%m','mm').gsub('%d','dd').gsub('%H','HH').gsub('%M','MM').gsub('%S','SS')
@@ -302,7 +307,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
         end while File.exist?(path)
         path
       else
-        "#{@path_prefix}#{chunk_key}_#{@path_suffix}#{suffix}"
+        "#{@path_prefix}#{chunk_key}#{@path_suffix}#{suffix}"
       end
     else
       if @compress
