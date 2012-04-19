@@ -50,6 +50,17 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     d1.expect_format %[2011-01-02T13:14:15Z\ttest\t{"a":2}\n]
     d1.run
 
+    dx = create_driver(CONFIG + %[
+      time_format %Y-%m-%d %H-%M-%S
+    ])
+
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    dx.emit({"a"=>1}, time)
+    dx.emit({"a"=>2}, time)
+    dx.expect_format %[2011-01-02 13-14-15\ttest\t{"a":1}\n]
+    dx.expect_format %[2011-01-02 13-14-15\ttest\t{"a":2}\n]
+    dx.run
+
     d2 = create_driver %[
       path #{TMP_DIR}/accesslog.%Y-%m-%d-%H-%M-%S
       output_include_time false

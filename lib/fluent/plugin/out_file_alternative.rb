@@ -215,6 +215,8 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
   config_param :path, :string  # /path/pattern/to/hdfs/file can use %Y %m %d %H %M %S
 
+  config_param :time_format, :string, :default => nil
+
   config_param :compress, :default => nil do |val|
     c = SUPPORTED_COMPRESS[val.to_sym]
     unless c
@@ -270,6 +272,8 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
     unless @path.index('/') == 0
       raise Fluent::ConfigError, "Path on filesystem MUST starts with '/', but '#{@path}'"
     end
+
+    @timef = Fluent::TimeFormatter.new(@time_format, @localtime)
   end
 
   def start
