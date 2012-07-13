@@ -2,7 +2,7 @@
 
 File output plugin alternative implementation, **is 100% compatible with fluentd built-in 'out_file'**, and added many options to format output as you want.
 
-FileAlternativeOutput slices data by time (for specified units), and store these data as plain text on hdfs. You can specify to:
+FileAlternativeOutput slices data by time (for specified units), and store these data as plain text on local file. You can specify to:
 
 * format whole data as serialized JSON, single attribute or separated multi attributes
 * include time as line header, or not
