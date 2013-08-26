@@ -9,6 +9,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{alternative implementation of out_file, with various configurations}
   gem.summary       = %q{alternative implementation of out_file}
   gem.homepage      = "https://github.com/tagomoris/fluent-plugin-file-alternative"
+  gem.license       = "APLv2"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
