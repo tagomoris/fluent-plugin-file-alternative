@@ -18,4 +18,5 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "fluentd"
   gem.add_runtime_dependency "fluent-mixin-plaintextformatter"
+  gem.add_development_dependency "rake"
 end
