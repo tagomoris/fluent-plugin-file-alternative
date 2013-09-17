@@ -29,9 +29,9 @@ And, gzip compression is also supported.
 Standard out_file way (hourly log, compression, time-tag-json):
 
     <match out.**>
-      type file\_alternative
+      type file_alternative
       path /var/log/service/access.*.log
-      time\_slice\_output %Y%m%d_%H
+      time_slice_output %Y%m%d_%H
       compress gzip
     </match>
 
@@ -45,7 +45,7 @@ By this configuration, in gzip compressed file '/var/log/service/access.20120316
 If you don't want fluentd-time and tag in written file, and messages with single attribute (as raw full apache log with newline):
 
     <match out.**>
-      type file\_alternative
+      type file_alternative
       path /var/log/service/access.%Y%m%d_%H.log
       compress gzip
       output_include_time false
