@@ -19,6 +19,8 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
     end
     c
   end
+	
+	config_param :symlink_path, :string, :default => nil
 
   include Fluent::Mixin::PlainTextFormatter
 
@@ -60,6 +62,11 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
     unless @path.index('/') == 0
       raise Fluent::ConfigError, "Path on filesystem MUST starts with '/', but '#{@path}'"
     end
+
+    unless @symlink_path.index('/') == 0
+      raise Fluent::ConfigError, "Symlink path on filesystem MUST starts with '/', but '#{@symlink_path}'"
+    end
+		@buffer.symlink_path = @symlink_path if @symlink_path
   end
 
   def start
