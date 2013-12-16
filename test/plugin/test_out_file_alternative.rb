@@ -8,6 +8,8 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     compress gz
   ]
 
+	SYMLINK_PATH = File.expand_path("#{TMP_DIR}/current")
+
   def setup
     Fluent::Test.setup
     FileUtils.rm_rf(TMP_DIR)
@@ -127,5 +129,34 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     d3.expect_format %[app01,info,Send response\n]
     path = d3.run
     assert_equal "#{TMP_DIR}/accesslog.2011-01-02-13-14-15.gz", path[0]
+	end
+
+	def test_write_with_symlink
+    conf = CONFIG + %[
+			symlink_path #{SYMLINK_PATH}
+		]
+    symlink_path = "#{SYMLINK_PATH}"
+
+    Fluent::FileBuffer.clear_buffer_paths
+    d = Fluent::Test::TestDriver.new(Fluent::FileOutput).configure(conf)
+
+    begin
+      d.instance.start
+      10.times { sleep 0.05 }
+      time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+      es = Fluent::OneEventStream.new(time, {"a"=>1})
+      d.instance.emit('tag', es, Fluent::NullOutputChain.instance)
+
+      assert File.exists?(symlink_path)
+      assert File.symlink?(symlink_path)
+
+      d.instance.enqueue_buffer
+
+      assert !File.exists?(symlink_path)
+      assert File.symlink?(symlink_path)
+    ensure
+      d.instance.shutdown
+      FileUtils.rm_rf(symlink_path)
+    end
   end
 end
