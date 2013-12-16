@@ -63,7 +63,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
       raise Fluent::ConfigError, "Path on filesystem MUST starts with '/', but '#{@path}'"
     end
 
-		if !(@symlink_path.nil?)
+		if @symlink_path
     	unless @symlink_path.index('/') == 0
       	raise Fluent::ConfigError, "Symlink path on filesystem MUST starts with '/', but '#{@symlink_path}'"
     	end
