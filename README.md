@@ -1,4 +1,4 @@
-# fluent-plugin-file-alternative
+# fluent-plugin-file-alternative, a plugin for [Fluentd](http://fluentd.org)
 
 File output plugin alternative implementation, **is 100% compatible with fluentd built-in 'out_file'**, and added many options to format output as you want.
 
