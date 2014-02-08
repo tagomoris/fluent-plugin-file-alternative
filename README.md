@@ -1,6 +1,7 @@
-# fluent-plugin-file-alternative, a plugin for [Fluentd](http://fluentd.org)
+# fluent-plugin-file-alternative 
 
-File output plugin alternative implementation, **is 100% compatible with fluentd built-in 'out_file'**, and added many options to format output as you want.
+File output plugin alternative implementation, **is 100% compatible with
+[Fluentd](http://fluentd.org) built-in 'out_file'**, and added many options to format output as you want.
 
 FileAlternativeOutput slices data by time (for specified units), and store these data as plain text on local file. You can specify to:
 
