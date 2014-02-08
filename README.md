@@ -22,10 +22,6 @@ And you can specify output file path as:
 
 And, gzip compression is also supported.
 
-### Why this is not a patch for out_file?
-
-`fluent-plugin-file-alternative` has optimized buffer data structure to make faster to write data on disk. But that buffer structure is not compatible with `out_file`'s one. That's tha reason why this plugin is an another plugin from `out_file`.
-
 ## Configuration
 
 ### FileAlternativeOutput
