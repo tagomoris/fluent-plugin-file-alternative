@@ -3,6 +3,11 @@ require 'fluent/mixin/plaintextformatter'
 class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   Fluent::Plugin.register_output('file_alternative', self)
 
+  # Define `log` method for v0.10.42 or earlier
+  unless method_defined?(:log)
+    define_method("log") { $log }
+  end
+
   SUPPORTED_COMPRESS = {
     :gz => :gz,
     :gzip => :gz,
@@ -141,7 +146,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
         }
       end
     rescue
-      $log.error "failed to write data: path #{path}"
+      log.error "failed to write data: path #{path}"
       raise
     end
     path
