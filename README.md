@@ -36,7 +36,7 @@ Standard out_file way (hourly log, compression, time-tag-json):
     <match out.**>
       type file_alternative
       path /var/log/service/access.*.log
-      time_slice_output %Y%m%d_%H
+      time_slice_format %Y%m%d_%H
       compress gzip
     </match>
 
