@@ -14,18 +14,22 @@ FileAlternativeOutput slices data by time (for specified units), and store these
 And you can specify output file path as:
 
 * Standard out_file way
-  * configure 'path /path/to/dir/access'
-  * and 'time\_slice\_format %Y%m%d'
-  * got '/path/to/dir/access.20120316.log'
+  * configure `path /path/to/dir/access`
+  * and `time_slice_format %Y%m%d`
+  * got `/path/to/dir/access.20120316.log`
+* Standard out_file way (alternative)
+  * configure `path /path/to/dir/access.*.log`
+  * and `time_slice_format %Y%m%d`
+  * got `/path/to/dir/access.20120316.log`
 * Alternative style
-  * configure 'path /path/to/dir/access.%Y%m%d.log' only
-  * got '/path/to/dir/access.20120316.log'
+  * configure `path /path/to/dir/access.%Y%m%d.log` only (don't include `*`)
+  * got `/path/to/dir/access.20120316.log`
 
 And, gzip compression is also supported.
 
--### Why this is not a patch for out_file?
--
--`fluent-plugin-file-alternative` has optimized buffer data structure to make faster to write data on disk. But that buffer structure is not compatible with `out_file`'s one. That's tha reason why this plugin is an another plugin from `out_file`.
+### Why this is not a patch for out_file?
+
+`fluent-plugin-file-alternative` has optimized buffer data structure to make faster to write data on disk. But that buffer structure is not compatible with `out_file`'s one. That's tha reason why this plugin is an another plugin from `out_file`.
 
 ## Configuration
 
