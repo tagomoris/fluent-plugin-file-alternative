@@ -1,7 +1,6 @@
 # fluent-plugin-file-alternative 
 
-File output plugin alternative implementation, **is 100% compatible with
-[Fluentd](http://fluentd.org) built-in 'out_file'**, and added many options to format output as you want.
+File output plugin alternative implementation.
 
 FileAlternativeOutput slices data by time (for specified units), and store these data as plain text on local file. You can specify to:
 
@@ -26,10 +25,6 @@ And you can specify output file path as:
   * got `/path/to/dir/access.20120316.log`
 
 And, gzip compression is also supported.
-
-### Why this is not a patch for out_file?
-
-`fluent-plugin-file-alternative` has optimized buffer data structure to make faster to write data on disk. But that buffer structure is not compatible with `out_file`'s one. That's tha reason why this plugin is an another plugin from `out_file`.
 
 ## Configuration
 
