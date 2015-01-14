@@ -109,7 +109,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     d2.expect_format %[123-456-789\n]
     path = d2.run
     assert_equal "#{TMP_DIR}/accesslog.2011-01-02-13-14-15", path[0]
-    
+
     d3 = create_driver %[
       path #{TMP_DIR}/accesslog.%Y-%m-%d-%H-%M-%S
       compress gzip
@@ -143,12 +143,12 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     d.run
     assert File.exists?(symlink_path)
     assert File.symlink?(symlink_path)
-    
+
     d.instance.start
     begin
       10.times { sleep 0.05 }
       d.instance.enqueue_buffer
-      
+
       assert !File.exists?(symlink_path)
       assert File.symlink?(symlink_path)
     ensure
