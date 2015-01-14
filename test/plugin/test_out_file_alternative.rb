@@ -31,6 +31,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
 
     d = create_driver %[
       path #{TMP_DIR}/accesslog.%Y-%m-%d-%H-%M-%S
+      dir_mode 0700
     ]
     assert_equal '%Y%m%d%H%M%S', d.instance.time_slice_format
     assert_nil d.instance.compress
@@ -39,6 +40,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     assert_equal 'json', d.instance.output_data_type
     assert_equal true, d.instance.add_newline
     assert_equal "TAB", d.instance.field_separator
+    assert_equal '0700', d.instance.dir_mode
     assert_nil d.instance.remove_prefix
   end
 
@@ -129,6 +131,20 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     d3.expect_format %[app01,info,Send response\n]
     path = d3.run
     assert_equal "#{TMP_DIR}/accesslog.2011-01-02-13-14-15.gz", path[0]
+
+    d4 = create_driver %[
+      path #{TMP_DIR}/path_to_test/%Y/%m/%d/accesslog.%Y-%m-%d-%H-%M-%S
+      dir_mode 0700
+    ]
+
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    d4.emit({"server" => "www01", "level" => "warn", "log" => "Exception\n"}, time)
+    path = d4.run
+    assert_equal '40700', File.stat(File.dirname(File.dirname(File.dirname(path[0])))).mode.to_s(8)
+    assert_equal '40700', File.stat(File.dirname(File.dirname(path[0]))).mode.to_s(8)
+    assert_equal '40700', File.stat(File.dirname(path[0])).mode.to_s(8)
+    assert_equal "#{TMP_DIR}/path_to_test/2011/01/02/accesslog.2011-01-02-13-14-15", path[0]
+
   end
 
   def test_write_with_symlink
@@ -155,4 +171,5 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
       d.instance.shutdown
     end
   end
+
 end
