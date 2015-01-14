@@ -19,4 +19,5 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "fluentd", ">= 0.10.39" # This version for @buffer.symlink_path
   gem.add_runtime_dependency "fluent-mixin-plaintextformatter"
   gem.add_development_dependency "rake"
+  gem.add_development_dependency "test-unit"
 end
