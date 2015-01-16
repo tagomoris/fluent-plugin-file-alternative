@@ -56,6 +56,8 @@ If you don't want fluentd-time and tag in written file, and messages with single
       output_include_tag false
       output_data_type attr:message
       add_newline false
+      symlink_path /var/log/service/access_latest.log
+      dir_mode 0777
     </match>
 
 Then, you will get:
