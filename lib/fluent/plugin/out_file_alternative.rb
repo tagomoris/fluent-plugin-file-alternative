@@ -27,6 +27,8 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
   config_param :symlink_path, :string, :default => nil
 
+  config_param :dir_mode, :string, :default => '0777'
+
   include Fluent::Mixin::PlainTextFormatter
 
   def initialize
@@ -133,7 +135,12 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
     path = path_format(chunk.key)
 
     begin
-      FileUtils.mkdir_p File.dirname(path)
+      require 'pathname'
+
+      Pathname.new(path).descend {|p|
+        FileUtils.mkdir_p( File.dirname(p)) unless File.directory?(p)
+        FileUtils.chmod @dir_mode.to_i(8), File.dirname(p) unless File.directory?(p)
+      }
 
       case @compress
       when :gz
