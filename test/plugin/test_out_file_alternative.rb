@@ -135,6 +135,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     d4 = create_driver %[
       path #{TMP_DIR}/path_to_test/%Y/%m/%d/accesslog.%Y-%m-%d-%H-%M-%S
       dir_mode 0700
+      utc
     ]
 
     time = Time.parse("2011-01-02 13:14:15 UTC").to_i
