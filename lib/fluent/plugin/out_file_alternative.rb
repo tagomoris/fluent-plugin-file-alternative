@@ -29,7 +29,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
   config_param :dir_mode, :string, :default => '0777'
 
-  config_param :enable_chmod, :bool, :default => true
+  config_param :set_dir_mode, :bool, :default => true
 
   include Fluent::Mixin::PlainTextFormatter
 
@@ -141,7 +141,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
       Pathname.new(path).descend {|p|
         FileUtils.mkdir_p( File.dirname(p)) unless File.directory?(p)
-        if @enable_chmod
+        if @set_dir_mode
           FileUtils.chmod @dir_mode.to_i(8), File.dirname(p) unless File.directory?(p)
         end
       }
