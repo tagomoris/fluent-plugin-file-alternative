@@ -29,6 +29,8 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
   config_param :dir_mode, :string, :default => '0777'
 
+  config_param :set_dir_mode, :bool, :default => true
+
   include Fluent::Mixin::PlainTextFormatter
 
   def initialize
@@ -139,7 +141,9 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
       Pathname.new(path).descend {|p|
         FileUtils.mkdir_p( File.dirname(p)) unless File.directory?(p)
-        FileUtils.chmod @dir_mode.to_i(8), File.dirname(p) unless File.directory?(p)
+        if @set_dir_mode
+          FileUtils.chmod @dir_mode.to_i(8), File.dirname(p) unless File.directory?(p)
+        end
       }
 
       case @compress

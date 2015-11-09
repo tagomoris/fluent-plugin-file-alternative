@@ -173,4 +173,21 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     end
   end
 
+  def test_disable_chmod
+    d = create_driver %{
+      path #{TMP_DIR}/path_to_test/%Y/%m/%d/accesslog.%Y-%m-%d-%H-%M-%S
+      dir_mode 0700
+      set_dir_mode false
+      utc
+    }
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    d.emit({"server" => "www01", "level" => "warn", "log" => "Exception\n"}, time)
+    # directory's permission should follow umask, even dir_mode specified
+    dir_mask = (040777 ^ File.umask).to_s(8)
+    path = d.run
+    assert_equal dir_mask, File.stat(File.dirname(File.dirname(File.dirname(path[0])))).mode.to_s(8)
+    assert_equal dir_mask, File.stat(File.dirname(File.dirname(path[0]))).mode.to_s(8)
+    assert_equal dir_mask, File.stat(File.dirname(path[0])).mode.to_s(8)
+  end
+
 end
