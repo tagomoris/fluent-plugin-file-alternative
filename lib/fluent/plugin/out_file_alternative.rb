@@ -15,9 +15,15 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
   config_set_default :time_slice_format, '%Y%m%d' # %Y%m%d%H
 
-  config_param :path, :string  # /path/pattern/to/hdfs/file can use %Y %m %d %H %M %S
+  config_param :path, :string,
+               :desc => <<-DESC
+The Path of the file.
+/path/pattern/to/hdfs/file can use %Y %m %d %H %M %S
+DESC
 
-  config_param :compress, :default => nil do |val|
+  config_param :compress,
+               :desc => "Supported format: #{SUPPORTED_COMPRESS.keys}",
+               :default => nil do |val|
     c = SUPPORTED_COMPRESS[val.to_sym]
     unless c
       raise ConfigError, "Unsupported compression algorithm '#{compress}'"
@@ -25,11 +31,14 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
     c
   end
 
-  config_param :symlink_path, :string, :default => nil
+  config_param :symlink_path, :string, :default => nil,
+               :desc => "Create symlink to temporary buffered file when buffer_type is file."
 
-  config_param :dir_mode, :string, :default => '0777'
+  config_param :dir_mode, :string, :default => '0777',
+               :desc =>  "The mode of the directory."
 
-  config_param :set_dir_mode, :bool, :default => true
+  config_param :set_dir_mode, :bool, :default => true,
+               :desc => "Set the mode of the directory."
 
   include Fluent::Mixin::PlainTextFormatter
 
