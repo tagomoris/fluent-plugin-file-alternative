@@ -66,6 +66,12 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
       conf['buffer_path'] ||= conf['path'].gsub('%Y','yyyy').gsub('%m','mm').gsub('%d','dd').gsub('%H','HH').gsub('%M','MM').gsub('%S','SS')
     end
 
+    if windows?
+      if @set_dir_mode
+        log.info "File permission changing feature is not supported on Windows."
+      end
+    end
+
     super
 
     validate_path
