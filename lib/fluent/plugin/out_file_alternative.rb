@@ -80,12 +80,12 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   end
 
   def validate_path_for_windows
-    unless @path.index(/^[a-zA-z]:\\/) == 0
+    unless @path.gsub("\\","/") =~ /^[a-zA-z]:\//
       raise Fluent::ConfigError, "Path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@path}'"
     end
 
     if @symlink_path
-      unless @symlink_path.index((/^[a-zA-z]:\\/)) == 0
+      unless @symlink_path.gsub("\\","/") =~ /^[a-zA-z]:\//
         raise Fluent::ConfigError, "Symlink path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@symlink_path}'"
       end
       @buffer.symlink_path = @symlink_path
