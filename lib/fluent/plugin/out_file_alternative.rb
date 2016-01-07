@@ -68,6 +68,31 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
     super
 
+    validate_path
+  end
+
+  def validate_path
+    if windows?
+      validate_path_for_windows
+    else
+      validate_path_for_non_windows
+    end
+  end
+
+  def validate_path_for_windows
+    unless @path.index(/^[a-zA-z]:\\/) == 0
+      raise Fluent::ConfigError, "Path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@path}'"
+    end
+
+    if @symlink_path
+      unless @symlink_path.index((/^[a-zA-z]:\\/)) == 0
+        raise Fluent::ConfigError, "Symlink path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@symlink_path}'"
+      end
+      @buffer.symlink_path = @symlink_path
+    end
+  end
+
+  def validate_path_for_non_windows
     unless @path.index('/') == 0
       raise Fluent::ConfigError, "Path on filesystem MUST starts with '/', but '#{@path}'"
     end
@@ -78,6 +103,10 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
       end
       @buffer.symlink_path = @symlink_path
     end
+  end
+
+  def windows?
+    RUBY_PLATFORM =~ /mswin(?!ce)|mingw|cygwin|bccwin/
   end
 
   def start
