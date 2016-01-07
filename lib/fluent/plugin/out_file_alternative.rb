@@ -152,7 +152,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
           chunk.write_to(f)
         }
       else
-        File.open(path, "a") {|f|
+        File.open(path, "ab") {|f|
           chunk.write_to(f)
         }
       end
