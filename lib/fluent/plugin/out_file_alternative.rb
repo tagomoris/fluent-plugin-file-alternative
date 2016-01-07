@@ -167,7 +167,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
       Pathname.new(path).descend {|p|
         FileUtils.mkdir_p( File.dirname(p)) unless File.directory?(p)
-        if @set_dir_mode
+        if @set_dir_mode && !windows?
           FileUtils.chmod @dir_mode.to_i(8), File.dirname(p) unless File.directory?(p)
         end
       }
