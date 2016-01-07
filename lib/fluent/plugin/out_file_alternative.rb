@@ -85,10 +85,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
     end
 
     if @symlink_path
-      unless @symlink_path.gsub("\\","/") =~ /^[a-zA-z]:\//
-        raise Fluent::ConfigError, "Symlink path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@symlink_path}'"
-      end
-      @buffer.symlink_path = @symlink_path
+      raise Fluent::ConfigError, "Symlink on Windows is not supported."
     end
   end
 

@@ -10,6 +10,10 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
 
   SYMLINK_PATH = File.expand_path("#{TMP_DIR}/current")
 
+  def windows?
+    RUBY_PLATFORM =~ /mswin(?!ce)|mingw|cygwin|bccwin/
+  end
+
   def setup
     Fluent::Test.setup
     FileUtils.rm_rf(TMP_DIR)
@@ -149,6 +153,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
   end
 
   def test_write_with_symlink
+    omit "Windows does not support synlink" if windows?
     conf = CONFIG + %[
       symlink_path #{SYMLINK_PATH}
     ]
