@@ -1,4 +1,5 @@
 require 'fluent/mixin/plaintextformatter'
+require 'fluent/plugin/windows_util'
 
 class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   Fluent::Plugin.register_output('file_alternative', self)
@@ -32,6 +33,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   config_param :set_dir_mode, :bool, :default => true
 
   include Fluent::Mixin::PlainTextFormatter
+  include Fluent::FileAlternative::WindowsUtil
 
   def initialize
     super
@@ -106,10 +108,6 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
       end
       @buffer.symlink_path = @symlink_path
     end
-  end
-
-  def windows?
-    RUBY_PLATFORM =~ /mswin(?!ce)|mingw|cygwin|bccwin/
   end
 
   def start

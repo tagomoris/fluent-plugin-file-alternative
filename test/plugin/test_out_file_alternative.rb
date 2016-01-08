@@ -1,6 +1,8 @@
 require 'helper'
 
 class FileAlternativeOutputTest < Test::Unit::TestCase
+  include Fluent::FileAlternative::WindowsUtil
+
   TMP_DIR = File.dirname(__FILE__) + "/../tmp"
 
   CONFIG = %[
@@ -9,10 +11,6 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
   ]
 
   SYMLINK_PATH = File.expand_path("#{TMP_DIR}/current")
-
-  def windows?
-    RUBY_PLATFORM =~ /mswin(?!ce)|mingw|cygwin|bccwin/
-  end
 
   def setup
     Fluent::Test.setup
