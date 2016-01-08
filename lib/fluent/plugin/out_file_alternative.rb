@@ -86,7 +86,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   end
 
   def validate_path_for_windows
-    unless @path.gsub("\\","/") =~ /^[a-zA-z]:\//
+    unless @path.gsub("\\","/") =~ /\A[a-zA-z]:\//
       raise Fluent::ConfigError, "Path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@path}'"
     end
 
