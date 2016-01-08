@@ -153,7 +153,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
   end
 
   def test_write_with_symlink
-    omit "Windows does not support synlink" if windows?
+    omit "Windows does not support symlink" if windows?
     conf = CONFIG + %[
       symlink_path #{SYMLINK_PATH}
     ]
@@ -179,7 +179,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
   end
 
   def test_disable_chmod
-    omit "NTFS does not support UNIX-like permissons." if windows?
+    omit "NTFS does not support UNIX-like permissions." if windows?
     d = create_driver %{
       path #{TMP_DIR}/path_to_test/%Y/%m/%d/accesslog.%Y-%m-%d-%H-%M-%S
       dir_mode 0700
