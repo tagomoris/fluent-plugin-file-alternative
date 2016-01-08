@@ -145,9 +145,13 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     time = Time.parse("2011-01-02 13:14:15 UTC").to_i
     d4.emit({"server" => "www01", "level" => "warn", "log" => "Exception\n"}, time)
     path = d4.run
-    assert_equal '40700', File.stat(File.dirname(File.dirname(File.dirname(path[0])))).mode.to_s(8)
-    assert_equal '40700', File.stat(File.dirname(File.dirname(path[0]))).mode.to_s(8)
-    assert_equal '40700', File.stat(File.dirname(path[0])).mode.to_s(8)
+    if windows?
+      omit "NTFS does not support UNIX-like permissions."
+    else
+      assert_equal '40700', File.stat(File.dirname(File.dirname(File.dirname(path[0])))).mode.to_s(8)
+      assert_equal '40700', File.stat(File.dirname(File.dirname(path[0]))).mode.to_s(8)
+      assert_equal '40700', File.stat(File.dirname(path[0])).mode.to_s(8)
+    end
     assert_equal "#{TMP_DIR}/path_to_test/2011/01/02/accesslog.2011-01-02-13-14-15", path[0]
 
   end
