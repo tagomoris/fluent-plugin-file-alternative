@@ -1,5 +1,7 @@
 # fluent-plugin-file-alternative 
 
+**NOTE: This plugin is outdated for Fluentd v0.14 ('file' output plugin in v0.14 has all features of this plugin)**
+
 File output plugin alternative implementation.
 
 FileAlternativeOutput slices data by time (for specified units), and store these data as plain text on local file. You can specify to:
