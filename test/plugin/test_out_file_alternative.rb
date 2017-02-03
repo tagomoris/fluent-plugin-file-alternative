@@ -1,6 +1,8 @@
 require 'helper'
 
 class FileAlternativeOutputTest < Test::Unit::TestCase
+  include Fluent::FileAlternative::WindowsUtil
+
   TMP_DIR = File.dirname(__FILE__) + "/../tmp"
 
   CONFIG = %[
@@ -141,14 +143,19 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
     time = Time.parse("2011-01-02 13:14:15 UTC").to_i
     d4.emit({"server" => "www01", "level" => "warn", "log" => "Exception\n"}, time)
     path = d4.run
-    assert_equal '40700', File.stat(File.dirname(File.dirname(File.dirname(path[0])))).mode.to_s(8)
-    assert_equal '40700', File.stat(File.dirname(File.dirname(path[0]))).mode.to_s(8)
-    assert_equal '40700', File.stat(File.dirname(path[0])).mode.to_s(8)
+    if windows?
+      omit "NTFS does not support UNIX-like permissions."
+    else
+      assert_equal '40700', File.stat(File.dirname(File.dirname(File.dirname(path[0])))).mode.to_s(8)
+      assert_equal '40700', File.stat(File.dirname(File.dirname(path[0]))).mode.to_s(8)
+      assert_equal '40700', File.stat(File.dirname(path[0])).mode.to_s(8)
+    end
     assert_equal "#{TMP_DIR}/path_to_test/2011/01/02/accesslog.2011-01-02-13-14-15", path[0]
 
   end
 
   def test_write_with_symlink
+    omit "Windows does not support symlink" if windows?
     conf = CONFIG + %[
       symlink_path #{SYMLINK_PATH}
     ]
@@ -174,6 +181,7 @@ class FileAlternativeOutputTest < Test::Unit::TestCase
   end
 
   def test_disable_chmod
+    omit "NTFS does not support UNIX-like permissions." if windows?
     d = create_driver %{
       path #{TMP_DIR}/path_to_test/%Y/%m/%d/accesslog.%Y-%m-%d-%H-%M-%S
       dir_mode 0700

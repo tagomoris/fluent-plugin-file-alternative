@@ -23,6 +23,7 @@ unless ENV.has_key?('VERBOSE')
 end
 
 require 'fluent/plugin/out_file_alternative'
+require 'fluent/plugin/windows_util'
 
 class Test::Unit::TestCase
 end

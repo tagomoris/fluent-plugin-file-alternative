@@ -1,4 +1,5 @@
 require 'fluent/mixin/plaintextformatter'
+require 'fluent/plugin/windows_util'
 
 class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   Fluent::Plugin.register_output('file_alternative', self)
@@ -41,6 +42,7 @@ DESC
                :desc => "Set the mode of the directory."
 
   include Fluent::Mixin::PlainTextFormatter
+  include Fluent::FileAlternative::WindowsUtil
 
   def initialize
     super
@@ -75,8 +77,36 @@ DESC
       conf['buffer_path'] ||= conf['path'].gsub('%Y','yyyy').gsub('%m','mm').gsub('%d','dd').gsub('%H','HH').gsub('%M','MM').gsub('%S','SS')
     end
 
+    if windows?
+      if @set_dir_mode
+        log.info "File permission changing feature is not supported on Windows."
+      end
+    end
+
     super
 
+    validate_path
+  end
+
+  def validate_path
+    if windows?
+      validate_path_for_windows
+    else
+      validate_path_for_non_windows
+    end
+  end
+
+  def validate_path_for_windows
+    unless @path.gsub("\\","/") =~ /\A[a-zA-z]:\//
+      raise Fluent::ConfigError, "Path on filesystem in Windows MUST starts with '[a-zA-z]:\', but '#{@path}'"
+    end
+
+    if @symlink_path
+      raise Fluent::ConfigError, "Symlink on Windows is not supported."
+    end
+  end
+
+  def validate_path_for_non_windows
     unless @path.index('/') == 0
       raise Fluent::ConfigError, "Path on filesystem MUST starts with '/', but '#{@path}'"
     end
@@ -150,7 +180,7 @@ DESC
 
       Pathname.new(path).descend {|p|
         FileUtils.mkdir_p( File.dirname(p)) unless File.directory?(p)
-        if @set_dir_mode
+        if @set_dir_mode && !windows?
           FileUtils.chmod @dir_mode.to_i(8), File.dirname(p) unless File.directory?(p)
         end
       }
@@ -161,7 +191,7 @@ DESC
           chunk.write_to(f)
         }
       else
-        File.open(path, "a") {|f|
+        File.open(path, "ab") {|f|
           chunk.write_to(f)
         }
       end
