@@ -129,11 +129,7 @@ DESC
         path_base = Time.strptime(chunk_key, @time_slice_format).strftime(@path)
         path = path_base + suffix
         if File.exist?(path)
-          i = 0
-          begin
-            path = "#{path_base}.#{i}#{suffix}"
-            i += 1
-          end while File.exist?(path)
+          path = "#{path_base}#{suffix}"
         end
         path
       else
@@ -157,8 +153,10 @@ DESC
 
       case @compress
       when :gz
-        Zlib::GzipWriter.open(path) {|f|
-          chunk.write_to(f)
+        File.open(path, "a") {|f|
+          gz= Zlib::GzipWriter.new(f)
+          chunk.write_to(gz)
+          gz.close
         }
       else
         File.open(path, "a") {|f|
