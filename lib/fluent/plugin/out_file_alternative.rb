@@ -115,11 +115,14 @@ DESC
              end
     if @path_prefix and @path_suffix
       if @compress
-        i = 0
-        begin
-          path = "#{@path_prefix}#{chunk_key}_#{i}#{@path_suffix}#{suffix}"
-          i += 1
-        end while File.exist?(path)
+        path = "#{@path_prefix}#{chunk_key}#{@path_suffix}#{suffix}"
+        if File.exist?(path)
+          i = 0
+          begin
+            path = "#{@path_prefix}#{chunk_key}_#{i}#{@path_suffix}#{suffix}"
+            i += 1
+          end while File.exist?(path)
+        end
         path
       else
         "#{@path_prefix}#{chunk_key}#{@path_suffix}#{suffix}"
